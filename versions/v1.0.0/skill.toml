@@ -1,0 +1,12 @@
+slug = "rust"
+name = "schematize-rust"
+tag = "Backend · Rust/Go"
+status = "stable"
+order = 3
+current_version = "1.0.0"
+href = "/rust"
+
+[descriptions]
+pt = "Padrões normativos de engenharia para backends com Rust como linguagem principal (Go auxiliar)."
+en = "Normative engineering standards for backends with Rust as the primary language (Go auxiliary)."
+es = "Estándares normativos de ingeniería para backends con Rust como lenguaje principal (Go auxiliar)."
