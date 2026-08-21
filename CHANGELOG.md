@@ -1,5 +1,24 @@
 # Changelog — schematize-rust
 
+Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
+com versionamento [SemVer](https://semver.org/lang/pt-BR/).
+
+## [1.11.0] — 2026-08-21
+Saneamento do catálogo conforme a vistoria de 2026-08-21.
+
+### Adicionado
+- **`edition = "2024"`** e **MSRV declarado e testado no CI** (`references/stack-rust.md`) — *sem um job que compile no MSRV, ele é intenção*.
+- **A condição que o `sqlx` impõe ao CI**, que faltava: as macros exigem `DATABASE_URL` no build **ou** `.sqlx/` commitado; sem uma das duas, o primeiro build num runner sem banco **falha na compilação, não no teste**. A casa escolhe `.sqlx/` commitado, com `cargo sqlx prepare --check` no CI para ele não envelhecer.
+- **`block_in_place` vs `spawn_blocking`** (`references/async-concorrencia.md`), com as duas restrições que doem em produção: `block_in_place` **entra em pânico no runtime current-thread** (e `#[tokio::test]` é current-thread por default) e tira aquele worker do jogo.
+
+### Corrigido
+- **`#![forbid(unsafe_code)]`**, não `deny` — `deny` é reabrível por um `#[allow]` local, e piso que qualquer arquivo reabre não é piso. Verificado compilando: `deny` + `allow` local **compila**; com `forbid`, `error[E0453]`.
+- **Os lints que a skill exige agora estão LIGADOS:** `-D clippy::unwrap_used` e companhia (preferindo `[lints.clippy]` no `Cargo.toml`, que viaja com o repo). `-D warnings` sozinho **não** liga nenhum deles — são `restriction`/`pedantic`, desligados por default. Verificado com um `.unwrap()` plantado: sem a flag, exit 0.
+- **`MutexGuard` através de `.await`**: o texto dizia "deadlock esperando"; o que acontece é que `std::sync::MutexGuard` **não é `Send`** e a future nem compila quando vai para `tokio::spawn` — com o reflexo errado nomeado (trocar por `tokio::sync::Mutex` só para calar o compilador faz compilar e devolve o deadlock, agora silencioso).
+
+### Mudado
+- `anti-padroes.md`, `arquitetura.md` e `entrega.md` viraram **ponteiro** (poda mecânica dos blocos idênticos à base).
+
 ## [1.10.0] — 2026-08-20
 Piso "efeito externo NUNCA sai de não-produção" no recorte **Rust** — o guard idiomático, com código pronto pra copiar.
 
@@ -16,9 +35,6 @@ Piso "efeito externo NUNCA sai de não-produção" no recorte **Rust** — o gua
 Correção da contradição do muro pré-login de IAM (alinha ao `iam.md` da schematize-engineering).
 ### Mudado
 - **/rust-iam**: removido o "2º fator forte obrigatório antes do acesso pleno" e o "força 2º fator no 1º login" — o muro pré-login / deadlock de bootstrap VETADO pela norma. Agora senha+Email OTP = 2FA baseline; fator forte é nudge + step-up just-in-time.
-
-
-Formato: [Keep a Changelog]; versionamento: SemVer. Inversão da `schematize-go`:
 aqui **Rust é a linguagem principal de backend e Go a auxiliar**. Frontend delega
 ao `schematize-web`.
 
