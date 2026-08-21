@@ -1,7 +1,7 @@
 # Stack — Rust principal, Go auxiliar
 
 Define a preferência de linguagem desta skill e o ferramental. É a inversão da
-`schematize-go`: aqui **Rust é a escolha padrão de backend** e **Go é a
+a base: aqui **Rust é a linguagem do serviço** e outra do rol pode entrar como **auxiliar** (a
 auxiliar**. Tudo o mais (arquitetura, segurança, testes, operação) segue os
 references comuns.
 
@@ -40,15 +40,17 @@ Mesma régua da casa, aplicada à direção Rust↔Go:
   `#![deny(unsafe_code)]` por padrão; `unsafe` só com ADR e bloco comentado
   explicando invariantes.
 - **Testes:** `cargo test` + (no domínio crítico) property-based (`proptest`) e
-  mutation; cobertura é piso, não meta. Detalhe em `references/testes.md`.
+  mutation; cobertura é piso, não meta. Detalhe em `references/testes.md` (o recorte Rust) — a **disciplina** de teste é da `schematize-qa`, e a segurança ofensiva da `schematize-pentest`.
 - **Segurança de deps:** `cargo deny`/`cargo audit` no CI; dependência nova com
   nome/licença/versão verificados (typosquatting é real).
 
-## 4. Go auxiliar (piso quando usado)
+## 4. Outra linguagem do rol como auxiliar (piso quando usada)
 
-Quando Go entrar como auxiliar, ele segue integralmente a `schematize-go`
-(mesmos pisos): `golangci-lint`, erro nunca como `_`, sem `panic` de controle,
-SQL parametrizado, container não-root. Ver a skill `schematize-go`.
+Um serviço auxiliar em outra linguagem do rol sancionado segue **integralmente a skill irmã dela**
+— e os pisos são os mesmos em todas: erro nunca engolido, SQL parametrizado, container não-root,
+lint da linguagem no CI, IAM como app separada, efeito externo que não sai de não-produção.
+A escolha do auxiliar é **fit + ADR**, como a do principal
+(`schematize-engineering` → `references/linguagens.md`), não preferência.
 
 ## 5. Pisos de código valem igual
 
@@ -61,9 +63,9 @@ aplicação atualizado no mesmo PR.
 
 ## 6. Coexistência com as outras skills
 
-`schematize-rust`, `schematize-go` e `schematize-web` podem estar habilitadas na
-mesma máquina ao mesmo tempo. Não há conflito: cada skill instala em seu próprio
-diretório (`.claude/skills/schematize-<slug>/`) e seus comandos são prefixados
-pelo slug (`/rust-*`, `/go-*`, `/web-*`). Escolha a skill pela natureza do
-trabalho — Rust-first aqui, Go-first na `schematize-go`, frontend na
-`schematize-web`.
+As skills do rol e a `schematize-web` podem estar habilitadas na mesma máquina ao
+mesmo tempo. Não há conflito: cada skill instala em seu próprio diretório
+(`.claude/skills/schematize-<slug>/`) e seus comandos são prefixados pelo slug
+(`/rust-*`, `/elixir-*`, `/cs-*`, `/web-*`, …). Escolha a skill pela **linguagem do
+serviço** que você está tocando — não por preferência; a linguagem já foi decidida
+por fit + ADR na `schematize-engineering` (`references/linguagens.md`).

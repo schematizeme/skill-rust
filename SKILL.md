@@ -18,7 +18,40 @@ Conjunto normativo que rege como software de backend é projetado, construído, 
 - **Node backend é proibido** (frontend Node é 100% permitido — ver `schematize-web`). **PHP é proibido** e migra sumariamente.
 - Detalhe e critérios de migração em `references/stack-rust.md` e `references/arquitetura.md` (§3).
 
-> Esta é a inversão da `schematize-go`: lá Go é principal e Rust a alternativa; aqui Rust é principal e Go o auxiliar. As duas podem coexistir na mesma máquina (comandos são namespaced por skill — ver abaixo).
+> Esta skill é o **recorte Rust** do rol sancionado da casa (Go, Rust, Elixir, C#, Zig, Ruby — a
+> escolha por serviço sai de **fit + ADR**, `schematize-engineering` → `references/linguagens.md`).
+> Não há hierarquia entre as irmãs: aqui a stack é Rust, e ponto. Todas podem coexistir na mesma
+> máquina — os comandos são namespaced por skill (ver abaixo).
+
+## Precedência e herança (leia antes de divergir)
+
+Esta skill é o **recorte Rust** da base. Duas regras governam a relação, e elas resolvem sozinhas
+quase toda dúvida de "onde está escrito o quê":
+
+1. **Onde esta skill divergir da base, a BASE MANDA.** `schematize-engineering` é a normativa; aqui
+   mora a **especialização** — o mecanismo, a lib, a sintaxe, o gate da linguagem. Divergência de
+   *piso* entre este arquivo e a base é **defeito desta skill**, não uma variante local aceitável.
+   Achou uma? É item de correção, não licença. *(Foi assim que o `argon2id-only` da casa virou
+   "argon2id ou PBKDF2" em uma skill só, e o rol de 6 linguagens virou "só Go e Rust" em três.)*
+2. **O que não está repetido aqui é HERDADO, não dispensado.** A ausência de um piso neste repo
+   nunca significa que ele não vale — significa que ele não muda de forma nesta linguagem. Em
+   especial, valem integralmente, sem cópia local:
+   - **§28 Archive** — `<projeto>/<projeto>_archive/` é **repositório git próprio, PRIVADO e
+     obrigatório**, criticidade 0 (`schematize-archive`; ADR-0005 para a planta canônica).
+   - **§39 Índice/MAPA** — enumeração exaustiva (uma entrada por unidade chamável, `M == N`) e o
+     **grafo com arestas em ASCII (`A -> B`), NUNCA a seta unicode** — o parser do app lê ASCII.
+   - **§35 Definition of Done** e a lista de anti-padrões **§37** (citada por **título**, nunca por
+     número: a numeração dos itens diverge entre skills).
+   - **IAM** (`schematize-engineering` → `references/iam.md`): identidade ≠ email, ≥2 fatores, ReBAC multi-tenant,
+     **alcançabilidade do 2º fator** (o fator de recuperação tem de ser alcançável quando o
+     principal cai — senão o 2FA vira bug de bootstrap que tranca o dono para fora), os parâmetros
+     mínimos de argon2id, sessão longa e logout irreversível.
+   - **Rol sancionado** — Go, Rust, Elixir, C#, Zig, Ruby, por **fit + ADR**
+     (`schematize-engineering` → `references/linguagens.md`). Esta skill é **uma** delas, não a
+     régua das outras.
+   - **Efeito externo** nunca sai de não-produção (`schematize-engineering` →
+     `references/efeitos-externos.md`; gate em `scripts/check-external-effects.sh`, distribuído
+     aqui — ADR-0008).
 
 ## Comandos (Claude Code)
 
@@ -35,7 +68,7 @@ Digite `/rust-help` pra ver todos. Em resumo:
 | `/rust-index` | (re)gera o índice de microfunções a partir dos doc-comments |
 | `/rust-ops` | audita/scaffolda o `<projeto>_ops` (interface única): fluxo de ambientes, instalação paralela (`nproc`), independência |
 
-Todos os comandos são prefixados com o slug da skill (`rust-`), então **convivem sem conflito** com `schematize-go` (`go-*`) e `schematize-web` (`web-*`) na mesma máquina. Ficam em `assets/commands/` e são instalados em `.claude/commands/`.
+Todos os comandos são prefixados com o slug da skill (`rust-`), então **convivem sem conflito** com as skills irmãs do rol (`go-*`, `elixir-*`, `cs-*`, `zig-*`, `ruby-*`) e com `schematize-web` (`web-*`) na mesma máquina. Ficam em `assets/commands/` e são instalados em `.claude/commands/`.
 
 ## Como usar esta skill
 
@@ -56,8 +89,7 @@ Mapa de references — leia o que casa com a tarefa:
 | **IAM — auth como microserviço Rust separado (`auth.<domain>`), ID≠email, ≥2 fatores (passkey/Resend/Twilio), ReBAC multi-tenant deny-default, sessão 7d/90d, logout irreversível, migração legado prioridade 0** | `references/iam.md` |
 | **Efeito externo fora de prd (e-mail/SMS/push/webhook): `trait EmailProvider` + sink default + `Guarded<P>` devolvendo `Result<_, MailError>` + cap por `AtomicUsize`, e o `#[tokio::test]` que espera o `Err`** | `references/iam.md` (§3.1) |
 | **Cadeia de suprimentos: lockfile, SBOM, scan que trava, imagem mínima/pinada/assinada, SLSA, segredo no build** | `references/cadeia-suprimentos.md` |
-| Testes — test kit, saída machine-readable, categorias de teste (§22.1–22.3) | `references/testes.md` |
-| Testes — padrão de script, seeds, CI, pentest, Makefile (§22.4–23); Q.A. plan-first vive na skill **schematize-qa** | `references/testes-execucao.md` |
+| Testes — o recorte Rust (runner, sintaxe, armadilhas do dialeto). **A disciplina é da `schematize-qa`.** | `references/testes.md` |
 | Observabilidade, healthchecks, performance, FinOps | `references/observabilidade.md` |
 | Config, deploy/K8s, git/PR, ownership, runbooks/incidentes, ADR, **archive** (§20–28) | `references/operacao.md` |
 | **Ops (control plane): fluxo dev→local→github→hml→prd (nada direto no servidor), ops como interface única (100%, autônomo), instalação paralela=`nproc`, independência=invariante** | `references/ops.md` |
@@ -78,10 +110,10 @@ Nunca violados, nem "pra funcionar", nem "pra ir mais rápido". Lista completa e
 - **Sem monólito que mistura bounded contexts**, sem monólito distribuído, sem shared lib `commons` de domínio.
 - **Archive SEMPRE gerado.** Toda entrega que produz código/decisão/mudança de estado gera o `.md` de archive. Templates em `assets/`.
 - **Migration reversível** (com `down`, testada com rollback). Container não-root, read-only. Dependência nova com nome/licença/versão verificados.
-- **Pisos de código (`references/padroes-codigo.md`):** arquivos **≤ 750 linhas** (teto duro: ~250 de comentário + ~500 de código útil; acima → quebrar por coesão), **flag em > 300 linhas de código útil** (não bloqueia, mas sempre sinaliza — indício de função extensa/falta de abstração, revê depois; observabilidade ~400), **uma função/unidade lógica por arquivo**, **toda função com doc-comment** (`///`: motivo, comportamento esperado, entradas, saídas, efeitos), **`MAPA.md` da aplicação** atualizado no mesmo PR — em **`<projeto>_archive/index/`, nunca no root** — e **índice de microfunções** regenerado (`/rust-index`). **Todo MD gerado (MAPA/índice/plano/relatório/handoff) mora no archive**, root limpo (§28). Detalhe em `references/padroes-codigo.md` (§4) e `references/operacao.md` (§28, §39).
+- **Pisos de código (`references/padroes-codigo.md`):** arquivos **≤ 750 linhas** (teto duro: ~250 de comentário + ~500 de código útil; acima → quebrar por coesão), **flag em > 300 linhas de código útil** (não bloqueia, mas sempre sinaliza — indício de função extensa/falta de abstração, revê depois; observabilidade ~400), **uma função/unidade lógica por arquivo**, **toda função com doc-comment** (`///`: motivo, comportamento esperado, entradas, saídas, efeitos), **`MAPA.md` da aplicação** atualizado no mesmo PR — em **`<projeto>_archive/index/`, nunca no root** — e **índice de microfunções** regenerado (`/rust-index`). **Todo MD gerado (MAPA/índice/plano/relatório/handoff) mora no archive**, root limpo (§28). Detalhe em `schematize-engineering` -> `references/padroes-codigo.md` (§4) e `references/operacao.md` (§28, §39).
 - **Backend novo prioriza Rust; Go é auxiliar; Node backend e PHP são proibidos.** Critérios em `references/stack-rust.md`.
 - **Fluxo de ambientes e ops (`references/ops.md`).** Toda mudança segue **dev local → teste local → GitHub → hml → prd**; **VETADO editar código direto no servidor** (hml/prd é imutável por edição manual, recebe só artefato do git). **100%** das operações no servidor (install/update/correção/config/migrate/rollback) passam pela **ferramenta do `<projeto>_ops`** — nunca à mão; o ops é **autônomo** (o usuário provisiona o servidor do zero sem a IA). **Instalação sempre paralela** = `nproc`; **falha no paralelo = serviços não independentes → corrigir a independência é prioridade máxima** (não serializar pra mascarar).
-- **Deploy destrutivo por seed + isolamento por usuário (`references/ops.md` §2–§3).** O ops provisiona em **`/<app>/`** clonando os repos dentro; **`/<app>/.env` é o seeder global** (fonte única de config). **Todo redeploy é destrutivo na aplicação** — apaga a anterior e recria um clone zerado só com o seed (idempotente/sem drift), **preservando os dados** (migration reversível; `ops reset` de dados só em dev/hml). **Cada serviço roda como user Linux próprio em systemd unit hardened** (blast radius mínimo). Tudo automatizado pelo ops.
+- **Deploy destrutivo por seed + isolamento por usuário (`schematize-engineering` -> `references/ops.md` §2–§3).** O ops provisiona em **`/<app>/`** clonando os repos dentro; **`/<app>/.env` é o seeder global** (fonte única de config). **Todo redeploy é destrutivo na aplicação** — apaga a anterior e recria um clone zerado só com o seed (idempotente/sem drift), **preservando os dados** (migration reversível; `ops reset` de dados só em dev/hml). **Cada serviço roda como user Linux próprio em systemd unit hardened** (blast radius mínimo). Tudo automatizado pelo ops.
 - **IAM por desenho (`references/iam.md`).** Todo projeto com auth começa com identidade e autorização robustas, e o auth é **app SEPARADA** — microserviço Rust `<projeto>_auth_rs` (axum/actix) + front próprio em **`auth.<domain>`**, isolado; **VETADO** monolith; apps delegam por **OIDC/OAuth2.1 + PKCE** (chave só no auth, JWKS público). **ID interno imutável — email/telefone nunca é ID** (N emails por usuário). **≥2 fatores sempre** (passkey/WebAuthn no núcleo via `webauthn-rs`, email OTP Resend always-on, Twilio p/ telefone; argon2id em `spawn_blocking`); invariante de troca "fator Y≠X no maior AAL"; recuperação ≥ login. **Multi-tenant RBAC/ABAC via ReBAC** (OpenFGA/SpiceDB), deny-default, PEP como `tower` layer, token fino. **Sessão 7d/90d**; **logout irreversível** (revoga refresh+família, `jti` na denylist, não só cookie). **Migrar auth legado = prioridade 0.** Scaffold/auditoria por `/rust-iam`.
 - **Efeito externo NUNCA sai de não-produção (`references/iam.md` §3.1; normativa na `schematize-engineering` → `references/efeitos-externos.md`).** E-mail, SMS/voz, push, webhook de terceiro e cobrança **não acontecem de verdade** fora de `prd` — por construção, não por lembrança. Em Rust: **`EmailProvider` já é trait (§3)**, então o **default fora de prd é o `SinkProvider`** (Mailpit/`tracing`) e o guard é um **wrapper genérico** `Guarded<P: EmailProvider>` selecionado por `env` **na composição** (`build_email_provider` → `Arc<dyn EmailProvider>`), **nunca no chamador** — destinatário fora do domínio de teste com `env != Prd` devolve **`Err(MailError::ExternalRecipientBlocked)`** (`thiserror`), nunca `tracing::warn!` + `Ok(())`; **sem `unwrap()`/`expect()`**, o chamador propaga com `?`. **Fail-closed**: `Env::from_raw` sem valor declarado assume **não-prd**, e `max_per_run == 0` cai no default 50. **Cap por execução** em `AtomicUsize` (`MAIL_MAX_PER_RUN`) que **aborta** — os 5.000 e-mails só existiram porque nada contava. Endereço sintético só em **`<papel>+<run-id>-<n>@test.<domain>`** (null MX/RFC 7505, ou `.test`/`.invalid`/`.example`): **VETADO** `@gmail.com`, domínio de cliente/terceiro, e-mail de pessoa real (**inclusive o seu**) e o domínio de produção em fixture/seed/persona/demo/carga. Chave de não-prd é **sandbox**. Provado por **`#[tokio::test] guard_recusa_dominio_externo`** (espera o `Err`; o spy conta 0 chamadas). Entregar de verdade fora de prd exige **as cinco** (ADR + allowlist ≤5 + cap + janela + subdomínio separado). Motivo: bounce/complaint em massa **queima IP e domínio** e derruba o transacional de prd — inclusive o **OTP de login deste IAM** — com semanas de warm-up e utilidade zero.
 
@@ -89,7 +121,7 @@ Nunca violados, nem "pra funcionar", nem "pra ir mais rápido". Lista completa e
 
 ## Testes — o que conta como "verde de verdade"
 
-Detalhe em `references/testes.md` (§22.1–22.3) e `references/testes-execucao.md` (§22.4–23). Essencial: smoke que assere shape (não só 200) e tem self-check que força um FAIL conhecido; unit agressivo com caminho de erro, casos hostis, property-based e mutation no domínio crítico; pentest que prova rejeição rota a rota; `simulated` que cruza rotas × personas × injections cobrindo 100% das rotas; e o Q.A. plan-first, hoje na skill dedicada **schematize-qa** (`/qa-plan` → `/qa-run`) — `/rust-qa` é o wrapper no recorte Rust.
+Detalhe em `references/testes.md` (o recorte Rust) — a **disciplina** de teste é da `schematize-qa`, e a segurança ofensiva da `schematize-pentest`.
 
 ## Andaime pronto (scripts e templates)
 

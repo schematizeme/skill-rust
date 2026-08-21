@@ -1,6 +1,6 @@
 # schematize-rust
 
-> Padrões normativos de engenharia da casa — **Rust principal, Go auxiliar**. Mesma base normativa da `schematize-go`, invertendo a preferência de linguagem; frontend delega à `schematize-web`.
+> Padrões normativos de engenharia da casa — o **recorte Rust** do rol sancionado (Go, Rust, Elixir, C#, Zig, Ruby, por fit + ADR). Mesma base normativa da `schematize-engineering`, especializada de linguagem; frontend delega à `schematize-web`.
 
 Pacote de **skill normativa para [Claude Code](https://claude.com/claude-code)**.
 Parte do catálogo **schematize skills** ([skills.schematize.me](https://skills.schematize.me)).

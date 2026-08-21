@@ -4,6 +4,7 @@ tag = "Backend · Rust/Go"
 status = "stable"
 order = 3
 current_version = "1.10.0"
+requires = ["engineering"]   # o piso vem da base; esta skill so especializa (SKILL.md, "Precedencia e heranca")
 href = "/rust"
 
 [descriptions]

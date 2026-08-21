@@ -1,5 +1,16 @@
 # Filosofia, Aplicação Universal e Anti-Padrões Vetados
 
+> **CITE ESTES ITENS PELO TÍTULO, NUNCA PELO NÚMERO.** A numeração é **local desta skill** e
+> **diverge entre as irmãs**: o mesmo `§37 item 45` é *"authz hand-rolled"* aqui, *"bloquear o
+> scheduler da BEAM"* na `schematize-elixir` e *"dois serviços no mesmo user Linux"* na
+> `schematize-ruby`; o item 49 é *"efeito externo real fora de prd"* na base, não existe em três
+> skills e é *"ReleaseFast sem profiling"* na `schematize-zig`. Os máximos vão de 46 a 53. Um
+> ponteiro `§37 item N` cruzando skills aponta para outra coisa — e um dentro da própria skill
+> apodrece assim que alguém insere um item no meio (foi o que aconteceu com a citação a *"item 48"*
+> em `references/iam.md`, quando esta lista terminava no 46). **Forma correta:** §37, *"<título do
+> item>"*.
+
+
 > Parte da skill **schematize-rust**. As referências cruzadas (§N) apontam para seções do corpo completo — todas presentes no conjunto de references desta skill.
 
 ## Índice
@@ -106,10 +117,10 @@ Prioridades, em ordem de desempate:
 ### CORS, headers e superfície
 
 12. **`Access-Control-Allow-Origin: *` em rota autenticada** (pior ainda com `allow-credentials`).
-    → Allowlist explícita de origens (§22.3 hardening).
+    → Allowlist explícita de origens (a `schematize-qa` (smoke e matriz simulated, `references/categorias.md` secoes 5 e 10) hardening).
 
 13. **Endpoint de debug/admin/management sem auth, ou bind em `0.0.0.0`** expondo porta interna.
-    → Bind restrito, auth obrigatória, `/debug` e `/actuator` retornam 404 externamente (§22.3).
+    → Bind restrito, auth obrigatória, `/debug` e `/actuator` retornam 404 externamente (ver a `schematize-qa` (smoke e matriz simulated, `references/categorias.md` secoes 5 e 10)).
 
 14. **Mass assignment** — dar bind do body inteiro direto na entidade, deixando passar `is_admin`, `tenant_id`, `created_at`, `password_hash`.
     → Allowlist explícita de campos aceitos por endpoint.
@@ -131,7 +142,7 @@ Prioridades, em ordem de desempate:
     → Conserta o código, não silencia o teste.
 
 19. **Baixar o threshold de cobertura ou editar o gate** pra o número fechar.
-    → Cobertura é contrato (§22). Sobe escrevendo teste, não mexendo na régua.
+    → Cobertura é contrato (ver a `schematize-qa`). Sobe escrevendo teste, não mexendo na régua.
 
 20. **Mockar o próprio sistema sob teste** retornando sucesso fixo, dando "verde" falso.
     → Testar comportamento real; mock só nas bordas externas.
@@ -181,21 +192,21 @@ Prioridades, em ordem de desempate:
 34. **Criar arquivos ou repos fora da pasta do projeto** (começar largando arquivos no root e depois **subir de diretório** — `cd ..`, `../` — pra criar repos irmãos fora; ou espalhar em `~`, `~/Documents`, `~/Downloads`, `/tmp`, Área de Trabalho).
     → Aplicação nova = **pasta dentro do workspace atual** (`./<projeto>_<contexto>/`). O agente não sai da pasta do projeto (ler ou escrever) sem o usuário pedir (§2).
 35. **Editar código direto no servidor** (hml/prd), ou **subir mudança direto pra hml/prd** pulando `dev local → teste local → GitHub`.
-    → Servidor é **imutável por edição manual**; recebe só artefato promovido do git. Hotfix segue o mesmo fluxo, acelerado (`references/ops.md` §1).
+    → Servidor é **imutável por edição manual**; recebe só artefato promovido do git. Hotfix segue o mesmo fluxo, acelerado (`schematize-engineering` -> `references/ops.md` §1).
 36. **Operar o servidor por fora do `<projeto>_ops`** — `ssh` + comando ad-hoc, editar arquivo no servidor, `docker`/`kubectl`/`systemctl` na mão, script solto.
-    → **100%** de install/update/config/correção passa por comando do ops. Não tem comando? **cria no ops** (`references/ops.md` §2).
+    → **100%** de install/update/config/correção passa por comando do ops. Não tem comando? **cria no ops** (`schematize-engineering` -> `references/ops.md` §2).
 37. **Instalar/subir o sistema em série** ("um serviço de cada vez", 20 min).
-    → Instalação **paralela por padrão** = `nproc` (`references/ops.md` §3).
+    → Instalação **paralela por padrão** = `nproc` (`schematize-engineering` -> `references/ops.md` §3).
 38. **Serializar a instalação pra "funcionar"**, mascarando que um serviço depende de outro pra subir.
-    → Erro que só ocorre em paralelo = **serviços não independentes** (fere piso 10/6). O ops **expõe** a colisão; corrigir a independência é **prioridade máxima**. Nunca esconder com serialização (`references/ops.md` §6).
+    → Erro que só ocorre em paralelo = **serviços não independentes** (fere piso 10/6). O ops **expõe** a colisão; corrigir a independência é **prioridade máxima**. Nunca esconder com serialização (`schematize-engineering` -> `references/ops.md` §6).
 39. **Redeploy que faz patch in-place / não parte do seed** (estado acumulado, drift entre implantações).
-    → Todo redeploy é **destrutivo na app**: apaga a anterior e recria um clone zerado a partir de `/<app>/.env` (`references/ops.md` §2). Idempotente e reprodutível.
+    → Todo redeploy é **destrutivo na app**: apaga a anterior e recria um clone zerado a partir de `/<app>/.env` (`schematize-engineering` -> `references/ops.md` §2). Idempotente e reprodutível.
 40. **Config/segredo de serviço fora do seed global**, ou repos do sistema espalhados fora de `/<app>/`.
-    → `/<app>/.env` é a **fonte única** de config; o ops clona os repos dentro de `/<app>/` (`references/ops.md` §2).
+    → `/<app>/.env` é a **fonte única** de config; o ops clona os repos dentro de `/<app>/` (`schematize-engineering` -> `references/ops.md` §2).
 41. **Apagar dados persistentes num redeploy** ("destrutivo" incluindo banco/volumes), ou `ops reset` de dados em prd.
-    → Destrutivo é a **aplicação, nunca os dados**: banco/volumes/uploads preservados (migration reversível); apagar dado é `ops reset` **gated a dev/hml** (`references/ops.md` §2).
+    → Destrutivo é a **aplicação, nunca os dados**: banco/volumes/uploads preservados (migration reversível); apagar dado é `ops reset` **gated a dev/hml** (`schematize-engineering` -> `references/ops.md` §2).
 42. **Dois serviços no mesmo user Linux, serviço rodando como `root`, ou criar user/unit/permissão à mão.**
-    → **Um user + systemd unit hardened por serviço**, provisionado **pelo ops** (`references/ops.md` §3). Blast radius mínimo.
+    → **Um user + systemd unit hardened por serviço**, provisionado **pelo ops** (`schematize-engineering` -> `references/ops.md` §3). Blast radius mínimo.
 
 ### Identidade e autorização (IAM)
 
@@ -207,6 +218,13 @@ Prioridades, em ordem de desempate:
     → **Motor ReBAC** (OpenFGA/SpiceDB), tuplas + relation rewrite; **deny-default**; **PEP como `tower` layer/extractor** em cada serviço chamando a Check API; **token fino** (sem lista de permissões); `tenant_id`/role/`sub` **do token verificado**, nunca do cliente; toda decisão auditada (`references/iam.md` §5).
 46. **Logout que só apaga o cookie** (refresh e sessão continuam válidos — "voltar o cookie" ou o refresh reativa a sessão), ou sessão de "15 min e é chutado".
     → Logout **irreversível**: revoga refresh + **família**, apaga o registro de sessão server-side, joga o `jti` na **denylist (Redis/DB)** até expirar, desassocia o push token — o PEP checa a denylist a cada request. **Sessão longa** (7d padrão / 90d se confiável) com access token curto + refresh rotativo com detecção de reuso (`references/iam.md` §6).
+
+
+### Efeitos externos (e-mail, SMS, push, webhook, cobrança)
+
+47. **Mandar de verdade fora de produção** — `lettre`/SDK do provedor ligado por default em dev/hml, `@gmail.com` (ou o seu e-mail) em fixture/seed/persona, laço de teste criando N contas com **Email OTP always-on** e nenhum contador no caminho.
+    → **Provider por ambiente** (trait `Mailer` com impl `Sink` fora de `prd`), **guard dentro do provider** (`MailError::ExternalRecipientBlocked`, fail-closed quando a config falta), **cap por execução** com `AtomicUsize` (`MAIL_MAX_PER_RUN`) válido em TODOS os ambientes, e endereço sintético só em `test.<domain>` com **null MX** (`references/iam.md` §3.1; normativa em `schematize-engineering` → `references/efeitos-externos.md`). Bounce/complaint em massa **queima IP e domínio** e derruba o e-mail transacional de **produção** — inclusive o **OTP de login** —, com semanas de warm-up e utilidade zero. Não tem undo.
+    *(Cite este anti-padrão **pelo título**, nunca por número: o mesmo `§37 item N` significa coisas diferentes em cada skill — ver a nota de numeração no topo.)*
 
 > Regra de bolso: se a justificativa começa com "só pra funcionar", "depois eu arrumo", ou "é mais rápido assim" e o resultado mexe em segredo, auth, dado, registro, **ou toca o servidor por fora do fluxo/ops** — **provavelmente é uma macaquice desta lista. Para e faz certo.**
 

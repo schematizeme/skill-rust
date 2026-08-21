@@ -1,0 +1,5 @@
+# Artefato de RELEASE, não de repositório: o `.zip` é gerado no momento do release e
+# anexado ao GitHub Release. Commitá-lo duplica o conteúdo do repo dentro do repo, e
+# o `install.sh` chegava a copiá-lo para dentro da skill instalada (achado 17.2 da
+# vistoria de 2026-08-21 — hoje o install.sh também o exclui do rsync).
+*.zip

@@ -20,8 +20,8 @@
 - Comunicação entre serviços via HTTP, gRPC, eventos ou mensageria — nunca via banco compartilhado.
 - Cada serviço é dono do seu schema.
 - **Nome do repositório:** `<projeto>_<contexto>[_<lang>]` em snake_case minúsculo. `<projeto>` = slug do produto/organização; `<contexto>` = a aplicação/bounded context daquele repo (`api`, `worker`, `front`, `backoffice`, `gateway`…); `_<lang>` é sufixo **opcional** pra desambiguar linguagem (`_rs` Rust, `_go` Go, `_ts` TypeScript). Como um repo = um contexto, o nome espelha isso. Ex.: `loja_api_rs`, `loja_front`, `loja_worker_go`.
-- **Independência de runtime (cada serviço é entidade à parte):** todo serviço **sobe e opera sozinho**. A indisponibilidade de qualquer outro serviço **nunca** impede o boot nem derruba este — depender de outro serviço para *iniciar/funcionar* é VETADO (nada de "o `ledger` não sobe se o `core` estiver fora"). Dependente ausente vira **degradação graciosa** (fallback, resposta parcial, enfileira e segue), nunca crash em cascata. Como não perder o dado quando a chamada falha: `references/dados-eventos.md` (§18).
-- **`<projeto>_ops` (control plane de desenvolvimento):** todo sistema multi-repo tem um repo **`<projeto>_ops`** — a ferramenta de operação do workspace, rodada por dev/agente e **fora do runtime do produto**. Faz bootstrap/instalação, update, manutenção, troubleshooting e roda os testes unitários/debug **através de todos os repos** (clona, sobe/para, migra, semeia e testa cada serviço). Não é microserviço nem é deployado com o produto; é essencial pra tocar um sistema de múltiplos repositórios. Como toda ferramenta, sobe com **observabilidade integrada** (Grafana/LGTM+, ver `references/observabilidade.md` §16).
+- **Independência de runtime (cada serviço é entidade à parte):** todo serviço **sobe e opera sozinho**. A indisponibilidade de qualquer outro serviço **nunca** impede o boot nem derruba este — depender de outro serviço para *iniciar/funcionar* é VETADO (nada de "o `ledger` não sobe se o `core` estiver fora"). Dependente ausente vira **degradação graciosa** (fallback, resposta parcial, enfileira e segue), nunca crash em cascata. Como não perder o dado quando a chamada falha: `schematize-engineering` -> `references/dados-eventos.md` (§18).
+- **`<projeto>_ops` (control plane de desenvolvimento):** todo sistema multi-repo tem um repo **`<projeto>_ops`** — a ferramenta de operação do workspace, rodada por dev/agente e **fora do runtime do produto**. Faz bootstrap/instalação, update, manutenção, troubleshooting e roda os testes unitários/debug **através de todos os repos** (clona, sobe/para, migra, semeia e testa cada serviço). Não é microserviço nem é deployado com o produto; é essencial pra tocar um sistema de múltiplos repositórios. Como toda ferramenta, sobe com **observabilidade integrada** (Grafana/LGTM+, ver `schematize-engineering` -> `references/observabilidade.md` §16).
 - **Contenção no workspace (nunca sair da pasta do projeto):** o **diretório de projeto atual é o workspace**; toda aplicação/repo do sistema nasce e mora **dentro dele**. Vai criar uma aplicação nova? Crie uma **pasta pra ela dentro da pasta atual** (`./<projeto>_<contexto>/`) e trabalhe lá — **nunca** largue arquivos soltos no root pra depois **subir de diretório** (`cd ..`, `../`) e criar os outros repos fora. Num sistema multi-repo os repos são **irmãos dentro do mesmo workspace** (clonados ali pelo `<projeto>_ops`), não espalhados pela máquina. **VETADO** criar/ler/escrever fora do workspace: diretório-pai, `~`, `~/Documents`, `~/Downloads`, `/tmp` do usuário, Área de Trabalho. O agente **não sai da pasta do projeto** — nem pra vasculhar, nem pra criar — a menos que o usuário peça explicitamente.
 
 **VETADO**
@@ -44,22 +44,32 @@
 
 ## 3. Linguagens
 
-**Backend — apenas Rust e Go.**
+**Backend — uma linguagem do ROL SANCIONADO, escolhida por fit + ADR.**
 
-| Cenário | Stack |
-|---|---|
-| Serviços backend, APIs, glue code, concorrência, padrão da casa | **Go** |
-| Performance crítica, segurança de memória | **Rust** |
+O rol é **Go, Rust, Elixir, C#, Zig e Ruby** — cada uma com skill irmã. A escolha é por
+**adequação ao serviço**, registrada em ADR (`schematize-engineering` → `references/linguagens.md`),
+nunca por preferência do time. **Node como serviço backend e PHP estão em saída** (não recebem
+serviço novo). *(Este arquivo dizia "apenas Rust e Go" — texto anterior à abertura do rol, que
+transformava a skill num veto sobre as irmãs.)*
+
+| Linguagem | Skill | Sufixo | Fit — quando escolher |
+|---|---|---|---|
+| **Rust** | `schematize-rust` | `_rs` | Correção e segurança de memória críticas: auth, cripto, parsing hostil. |
+| **Go** | `schematize-go` | `_go` | Serviços de rede/API concorrentes, CLIs, tooling. |
+| **Elixir** | `schematize-elixir` | `_ex` | Realtime, alta concorrência tolerante a falha (BEAM/OTP), pub-sub. |
+| **C#** (.NET) | `schematize-csharp` | `_cs` | Ecossistema .NET/enterprise, integração Microsoft. |
+| **Zig** | `schematize-zig` | `_zig` | Baixo nível, controle explícito de memória, interop com C, artefatos pequenos. |
+| **Ruby** | `schematize-ruby` | `_rb` | DX de produto (Rails), scripts/automação, legado Ruby. |
 
 **Frontend — Node é 100% permitido (e só frontend).** Frontend baseado em Node é a stack da casa porque hoje é o melhor do mercado: **Next.js** é a stack principal, mas **Astro e outros frameworks consolidados** são permitidos. O server-side do próprio front (route handlers, server actions, BFF) faz parte do frontend e é governado pelo §13.4 e §38 (segredo só server-side, etc.). Isso vale **apenas** para frontend — **não** reabre Node como linguagem de serviço backend (ver o MUST abaixo e §3.1: backend novo em Node é proibido; o ganho marginal de tooling/npm não compensa o histórico de incidentes de segurança).
 
 **MUST**
 - Versão exata em uso fica no Anexo A.
 - Não misturar linguagens dentro do **mesmo bounded context** sem ADR.
-- **Backend novo só em Rust ou Go.** Nenhum serviço backend novo em Node.
+- **Backend novo só em linguagem do rol sancionado, com ADR de fit.** Nenhum serviço backend novo em Node.
 
 **SHOULD**
-- Default é **Go**; **Rust** quando performance crítica ou segurança de memória justificam. Em empate técnico, Go vence (padrão do time).
+- **Não há default por gosto.** A escolha sai do guia de fit (`schematize-engineering` → `references/linguagens.md`) e vira ADR. Em empate técnico real, vence a linguagem que o time já opera em produção — e isso também vai no ADR, como o critério que foi.
 - Frameworks são bem-vindos; abstrações mágicas não. Critério: consigo entender o stack trace?
 
 ### 3.1 Node legado (backend) — migração para Rust/Go
@@ -131,10 +141,10 @@ Projetos legados onde código já existe sem separação de camadas **podem** ad
 - Toda nova feature/refactor em código tocado segue o layout completo (`domain/`, `application/`, `infrastructure/`, `interface/`) — não introduzir mais código "flat".
 - Ao mover/quebrar arquivo legado, organize já em folders DDD mesmo que internamente alguma classe ainda misture responsabilidades (ex.: service em `application/` ainda chamando SQL direto). Estrutura primeiro, inversão depois.
 - Cada PR que toca arquivo híbrido **deve** mover ao menos um pedaço pra direção certa (ex.: extrair entidade pra `domain/`, mover query pra `infrastructure/repositories/`).
-- ADR registrando o débito e o plano de remoção: `<project>/docs/adr/<n>-ddd-migration-<contexto>.md`.
+- ADR registrando o débito e o plano de remoção: `<projeto>/<projeto>_archive/decisoes/<n>-ddd-migration-<contexto>.md`.
 
 **SHOULD**
-- Manter teste de cobertura por camada (§22) durante a transição — domain começa com 0%, sobe a cada PR.
+- Manter teste de cobertura por camada (ver a `schematize-qa`) durante a transição — domain começa com 0%, sobe a cada PR.
 - Linter ou guard test que **rejeita imports proibidos** logo que possível (mesmo que com whitelist de exceções legadas):
   - `domain/` não importa `@nestjs/*`, `pg`, `axios`, `infrastructure/*`, `application/*`, `interface/*`.
   - `application/` não importa `interface/*`.

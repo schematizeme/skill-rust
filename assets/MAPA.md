@@ -1,7 +1,7 @@
 # MAPA da aplicação — <project>
 
 Guia detalhado de **onde está cada coisa, para que serve e como entra/sai**.
-Obrigatório por `references/padroes-codigo.md` (§4). **Mora em `<projeto>_archive/index/MAPA.md`, nunca no root** (§28). Atualize no mesmo PR que
+Obrigatório por `schematize-engineering` -> `references/padroes-codigo.md` (§4). **Mora em `<projeto>_archive/index/MAPA.md`, nunca no root** (§28). Atualize no mesmo PR que
 mexe no código (o archive é versionado). Duas camadas:
 
 - **Global** — mantido à mão (repos, pastas, módulos, comunicação, entradas/saídas).

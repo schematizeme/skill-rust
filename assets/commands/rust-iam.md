@@ -18,7 +18,7 @@ Confirme/scaffolde que o auth é **aplicação SEPARADA** (`references/iam.md` �
 - Serviço próprio `<projeto>_auth_rs` (**axum**/**actix-web** sobre Tokio) + front próprio
   `<projeto>_authfront`, servidos em **`auth.<domain>`** — **VETADO** monolith apensado ao
   escopo principal.
-- Repo/deploy/**user Linux + systemd isolados** por conta própria (casa com `ops.md` §3).
+- Repo/deploy/**user Linux + systemd isolados** por conta própria (casa com `schematize-engineering` -> `ops.md` §3).
 - App principal e clientes **delegam por OIDC/OAuth2.1 + PKCE**; chave de assinatura só no
   `<projeto>_auth_rs`, exposta como **JWKS público** (`jsonwebtoken`/`josekit`); consumidores
   validam por JWKS, nunca guardam a chave privada.

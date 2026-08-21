@@ -12,7 +12,7 @@ Carregue **à força** e passe a aplicar **integralmente** os Padrões de Engenh
    - `seguranca.md` — auth/JWT, multi-tenancy, segredo nunca no cliente, SQL parametrizado (`sqlx`/binds, nunca `format!`).
    - `iam.md` — **IAM da casa (angle Rust)**: auth como microserviço Rust SEPARADO (`<projeto>_auth_rs`, axum/actix) em `auth.<domain>`, ID interno≠email, ≥2 fatores (passkey `webauthn-rs`/Resend/Twilio, argon2id em `spawn_blocking`), ReBAC multi-tenant deny-default (PEP `tower` layer), sessão 7d/90d, logout irreversível (`jti` na denylist), migração de legado prioridade 0.
    - `dados-eventos.md`, `cadeia-suprimentos.md` — dados/mensageria/resiliência; lockfile/SBOM/scan/imagem assinada/SLSA.
-   - `testes.md` + `testes-execucao.md` — test kit, "verde de verdade", pentest, Q.A. plan-first.
+   - `testes.md` — test kit, "verde de verdade", pentest, Q.A. plan-first.
    - `observabilidade.md`, `operacao.md` + `entrega.md` — healthchecks/FinOps; config/deploy/git/ADR/**archive**/DoD/índice.
    - `ops.md` — **control plane `<projeto>_ops`**: fluxo dev→local→github→hml→prd (nada direto no servidor), ops como interface única (100%, autônomo), instalação paralela=`nproc`, independência=invariante (prioridade máxima).
    - `anti-padroes.md` — a lista completa de anti-padrões vetados.
