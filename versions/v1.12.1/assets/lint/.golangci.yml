@@ -1,0 +1,22 @@
+# schematize-rust — guard de imports por camada (§4, §4.X) para Go via depguard.
+# Copie para .golangci.yml na raiz do serviço Go.
+run: { timeout: 5m }
+linters:
+  enable: [depguard, gocyclo, gosec, errcheck, ineffassign, unparam]
+linters-settings:
+  gocyclo: { min-complexity: 15 }   # §6: ciclomática > 15 bloqueia
+  depguard:
+    rules:
+      domain-puro:
+        files: ["**/domain/**"]
+        deny:
+          - { pkg: "net/http",  desc: "domain não conhece IO/framework (§4)" }
+          - { pkg: "database/sql", desc: "domain não conhece persistência (§4)" }
+          - { pkg: "github.com/jmoiron/sqlx", desc: "domain não conhece ORM (§4)" }
+          - { pkg: "**/infrastructure/**", desc: "domain não importa infrastructure (§4)" }
+          - { pkg: "**/application/**", desc: "domain não importa application (§4)" }
+          - { pkg: "**/interface/**", desc: "domain não importa interface (§4)" }
+      application-sem-interface:
+        files: ["**/application/**"]
+        deny:
+          - { pkg: "**/interface/**", desc: "application não importa interface (§4)" }
