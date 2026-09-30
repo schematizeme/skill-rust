@@ -3,6 +3,16 @@
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.12.0] — 2026-09-30
+Orquestração por papéis e escada de modelo (custo). Pedido do dono: o orquestrador em modelo padrão não desenvolve; ações onerosas viram micro-tasks baratas; `sonnet` é o default nos subagents e `opus` só após falha.
+
+### Adicionado
+- **Piso 18 no `assets/CLAUDE.md` e bullet nos pisos do `SKILL.md`: "Orquestrador não desenvolve; subagent barato executa"** — o agent principal só planeja, decompõe, despacha, supervisiona e revisa; subagents em `sonnet` por padrão; falhou → o mesmo subagent corrige (até 2 rodadas) → re-decompõe → só então `opus`, com o motivo no checkpoint. Normativa na `schematize-engineering` → `references/orquestracao.md` §9 (não duplicada aqui).
+- **Recorte overdev:** no laço, cada item do checklist é executado por subagent `sonnet` e revisado pelo principal (diff + gate) antes do `- [x]`; escalar para Opus não é pergunta, esgotou Opus → `park`.
+
+### Mantido (piso inalterado)
+- Todos os pisos anteriores (segurança, IAM, efeito externo, archive, ops) seguem como estavam; a §9 escolhe **quem executa**, não relaxa **o que** se exige. Paralelizar para o relógio continua o padrão.
+
 ## [1.11.0] — 2026-08-21
 Saneamento do catálogo conforme a vistoria de 2026-08-21.
 
