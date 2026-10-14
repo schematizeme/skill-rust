@@ -3,9 +3,8 @@ name: schematize-rust
 metadata:
   version: 1.13.0
 description: >-
-  Padrões para backend em Rust: arquitetura, segurança, IAM, testes, dados, observabilidade, deploy e archive. Use ao
-  projetar, revisar ou refatorar código Rust (Cargo.toml, clippy, tokio/axum, sqlx): serviço, API, worker, CLI ou CI.
-  Rust entra no rol por fit + ADR.
+  Backend em Rust: arquitetura, segurança, IAM, testes, dados, observabilidade, deploy e archive. Use ao projetar ou
+  revisar Rust (Cargo.toml, clippy, tokio/axum, sqlx): serviço, API, worker, CLI ou CI. Entra por fit + ADR.
 ---
 
 # Padrões de Engenharia da Casa — recorte Rust
