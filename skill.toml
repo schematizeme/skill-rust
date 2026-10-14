@@ -3,7 +3,7 @@ name = "schematize-rust"
 tag = "Backend · Rust"
 status = "beta"
 order = 3
-current_version = "1.12.2"
+current_version = "1.13.0"
 requires = ["engineering"]   # o piso vem da base; esta skill so especializa (SKILL.md, "Precedencia e heranca")
 href = "/rust"
 

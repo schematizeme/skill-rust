@@ -1,7 +1,7 @@
 ---
 name: schematize-rust
 metadata:
-  version: 1.12.2
+  version: 1.13.0
 description: >-
   Padrões para backend em Rust: arquitetura, segurança, IAM, testes, dados, observabilidade, deploy e archive. Use ao
   projetar, revisar ou refatorar código Rust (Cargo.toml, clippy, tokio/axum, sqlx): serviço, API, worker, CLI ou CI.
@@ -12,7 +12,7 @@ description: >-
 
 Conjunto normativo que rege como software de backend é projetado, construído, testado e operado aqui, no recorte **Rust**. Mesma base normativa das demais skills da casa; o que muda é o ferramental (cargo, clippy, cargo-deny, Tokio/axum, sqlx) e as armadilhas do dialeto.
 
-**Versão:** skill `schematize-rust` v1.12.2. Changelog em `CHANGELOG.md`.
+**Versão:** skill `schematize-rust` v1.13.0. Changelog em `CHANGELOG.md`.
 
 ## Linguagem: Rust é uma do rol, por fit + ADR
 
