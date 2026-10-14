@@ -3,8 +3,7 @@ name: schematize-rust
 metadata:
   version: 1.13.1
 description: >-
-  Backend em Rust: arquitetura, segurança, IAM, testes, dados, observabilidade, deploy e archive. Use ao projetar ou
-  revisar Rust (Cargo.toml, clippy, tokio/axum, sqlx): serviço, API, worker, CLI ou CI. Entra por fit + ADR.
+  Backend em Rust: arquitetura, IAM, testes, dados, deploy. Use ao projetar ou revisar Cargo.toml, clippy, tokio/axum, sqlx: serviço, API, worker, CLI. Entra por fit + ADR.
 ---
 
 # Padrões de Engenharia da Casa — recorte Rust

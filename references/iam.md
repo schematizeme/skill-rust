@@ -17,6 +17,10 @@ por fit + ADR). **Todo projeto começa com um IAM robusto por desenho** — segu
 inegociável. A base agnóstica vive na `schematize-engineering` (`references/iam.md`); aqui
 ela ganha a topologia de serviço, as crates e os padrões async/Tokio da casa.
 
+> **Dona do tema: `schematize-iam`.** Topologia do broker, fatores, sessão, ReBAC, risco e recuperação vivem em
+> `schematize-iam → references/` (`topologia.md`, `fatores.md`, `sessao.md`, `authz-rebac.md`, `recuperacao-risco.md`);
+> a normativa agnóstica de base é `schematize-engineering → references/iam.md`. Este arquivo guarda só o recorte de linguagem.
+
 ## 1. Topologia — auth é uma APLICAÇÃO SEPARADA (microserviço Rust)
 
 - **Microserviço de auth em Rust** (`<projeto>_auth_rs`, ex.: **axum** ou **actix-web** sobre
@@ -441,11 +445,9 @@ com expiração, subdomínio de envio separado) — faltou uma, não roda.
 
 ## 4. Fluxos
 
-**Onboarding:** cita um email → **verifica** → **cria senha** (ou já passkey/app) → **pronto:
-2FA baseline (senha + Email OTP) e acesso baseline pleno**. Só **depois**, já dentro, o sistema
-**sugere** (nudge, não obriga) reforçar: 2º email de backup + fator forte. **Nunca se barra o
-acesso por não ter fator forte** — ele é pedido *just-in-time* na 1ª ação sensível (step-up)
-ou sob risco (§9).
+**Onboarding:** email verificado -> senha (ou passkey/app) -> acesso baseline pleno com 2FA (senha + Email OTP). Fator forte
+é nudge depois de entrar e step-up just-in-time na ação sensível ou sob risco (§9); **nunca** muro pré-login.
+Fluxos completos e invariante de troca de fator: `schematize-iam → references/fatores.md`.
 
 ## 5. Multi-tenant + RBAC/ABAC — motor ReBAC (estilo Zanzibar)
 
@@ -463,47 +465,27 @@ ou sob risco (§9).
 
 ## 6. Sessão, multi-dispositivo e logout
 
-- **Refresh rotativo com detecção de reuso** (reusou → revoga a **família** inteira). A
-  família e o `jti` são rastreados server-side.
+- **Refresh rotativo com detecção de reuso** (reusou -> revoga a família inteira); refresh opaco, aleatório de CSPRNG (`getrandom`/`rand::rngs::OsRng`),
+  hasheado no store; família e `jti` rastreados server-side.
+- **Logout irreversível:** revoga refresh e família, apaga a sessão server-side, `jti` na denylist até expirar, desassocia o push token.
+  Em Rust: o handler de logout do auth Rust; a `tower::Layer` de validação consulta a denylist de `jti` (cache curto).
+- Modelo completo, cookies e gate: `schematize-iam → references/sessao.md`.
 
 ## 7. Migração de auth legado — PRIORIDADE 0
 
-Existe auth no padrão antigo → **portar pra este IAM é prioridade máxima** (segurança
-inegociável; pode gastar o que precisar). Estratégia **strangler-fig**: dual-run, **re-hash
-preguiçoso** no login (ex.: valida no algoritmo antigo e re-grava em **argon2id** na hora),
-mapeia registros legados → modelo novo (dedupe de emails, cunha IDs internos ULID/UUIDv7),
-**ativa o Email OTP always-on como 2º fator baseline** (a conta migrada já entra em 2FA sem
-muro) e **incentiva enrolar fator forte** (step-up para sensível), **revoga sessões legadas** e
-**nunca confia na authz legada** (re-deriva pelas tuplas do ReBAC). O auth migrado nasce já
-como **microserviço Rust separado** (§1). Legado PHP/Node de auth **não** vira base de código
-nova — é substituído; código Node/PHP restante segue a regra de migração da casa.
+Auth legado existente: portar para este IAM é prioridade máxima (strangler-fig, dual-run). Em Rust: **re-hash preguiçoso**
+no login (verifica no algoritmo antigo, regrava em argon2id com crate `argon2` em `spawn_blocking`); o auth migrado nasce como microserviço Rust separado (§1).
+Passos de migração (dedupe de emails, IDs ULID/UUIDv7, Email OTP baseline, revogar sessões legadas, re-derivar authz pelas tuplas):
+`schematize-iam → references/recuperacao-risco.md` §6. Legado Node/PHP segue a regra de migração da casa
+(`schematize-engineering → references/linguagens.md`).
 
 ## 9. Autenticação adaptativa por risco (robusta) + transversais
 
-A resposta ao login **varia com o risco calculado** — é o que torna a conta difícil de tomar
-sem chatear o legítimo:
-
-- **Log de sessões/tentativas:** IP/ASN+reputação, device fingerprint, geo, UA, horário,
-  resultado e **score de risco** — na view de sessões (§6) e em audit log imutável.
-
-- **Score por tentativa:** IP suspeito/novo, device novo, geovelocidade impossível,
-  velocity/brute, hit de honeypot. Baixo = normal; alto = escala.
-
-- **Escalonamento por risco (2FA→3FA):** sob risco, exige **um fator a mais** — **senha →
-  email → app/chave**. Contexto (não só a ação) dispara step-up (mesmo motor do §3).
-
-- **Negação deceptiva / tarpit (falso negativo sob risco):** em contexto suspeito, mesmo com
-  **senha correta** o serviço pode responder **genérico uma vez** enquanto **computa que estava
-  certa** e marca "próxima passa" (já com os fatores escalados). Seguro porque: **resposta e
-  tempo idênticos** ao erro real (comparação em tempo constante, mesmo path — sem oráculo);
-  estado curto/escopado (conta+IP+device, TTL curto, nunca lockout do legítimo); **soma-se** ao
-  3FA; tudo logado.
-
-- **Honeypot:** contas/campos/rotas isca → qualquer interação = hostil (score alto, tarpit,
-  alerta); nunca serve real.
-
-- **Anti-automação:** rate-limit + **backoff exponencial** + **lockout progressivo por
-  conta+IP**; OTP curto/single-use, `jti` na denylist. Notifica login suspeito + "não fui eu".
+A resposta ao login varia com o risco calculado. Piso: log de sessões/tentativas com score (IP/ASN, device, geo, velocity, honeypot);
+escalonamento 2FA->3FA sob risco (senha -> email -> app/chave); negação deceptiva com resposta e tempo idênticos ao erro real
+(comparação em tempo constante, estado curto e escopado, nunca lockout do legítimo); honeypot; anti-automação (rate-limit, backoff,
+lockout progressivo conta+IP); notificação ao usuário com "não fui eu". Detalhe e parâmetros:
+`schematize-iam → references/recuperacao-risco.md` §2-§4.
 
 ### Transversais (sempre)
 

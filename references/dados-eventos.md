@@ -11,3 +11,8 @@
 ## 10. Banco de Dados
 
 **Ferramentas sugeridas:** `sqlx-cli`/`refinery` (Rust), `golang-migrate`, `node-pg-migrate`, `flyway`.
+
+Migrations seguras (expand-contract, `lock_timeout`, índice concorrente, backfill em lote), pool/PgBouncer e `EXPLAIN`:
+`schematize-postgres → references/locks-e-migrations.md`, `pooling.md`, `explain-e-indices.md`. Contrato de API (OpenAPI, erros RFC 9457,
+idempotência, cursor): `schematize-api → references/contrato-rest.md`. Em Rust, o que fica aqui é a escolha de ferramenta (`sqlx` com
+`query!` verificado em compilação, `sqlx migrate`) e o pool do `sqlx` dimensionado abaixo do `max_connections` do Postgres.
