@@ -9,7 +9,7 @@ jobs:
   standards-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with: { fetch-depth: 0 }
       - name: Gate de padrões (DoD/§37) no diff
         run: bash .claude/skills/schematize-rust/scripts/check-diff.sh "origin/${{ github.base_ref || 'main' }}"
@@ -28,7 +28,7 @@ jobs:
     # SQLX_OFFLINE: build hermético a partir do .sqlx/ commitado (stack-rust.md §3) — sem Postgres para compilar.
     env: { CARGO_TERM_COLOR: always, RUSTFLAGS: "-D warnings", SQLX_OFFLINE: "true" }
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Toolchain fixada (rust-toolchain.toml) + componentes
         run: rustup show && rustup component add clippy rustfmt
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
@@ -53,7 +53,7 @@ jobs:
         options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
     env: { DATABASE_URL: "postgres://postgres:ci-only@localhost:5432/ci" }
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - run: rustup show
       - run: cargo install --locked sqlx-cli --no-default-features --features rustls,postgres
       - run: sqlx migrate run && cargo sqlx prepare --workspace --check -- --all-targets
@@ -61,7 +61,7 @@ jobs:
   cargo-deny:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: cargo deny (advisories, licenças, bans, sources — assets/lint/deny.toml)
         uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
         with: { command: check, arguments: --all-features }
@@ -69,7 +69,7 @@ jobs:
   test-kit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Smoke + security + authz + hardening (PR — a `schematize-qa` (gates de CI, `references/execucao.md` secao 6))
         run: |
           # <projeto> test smoke && <projeto> test security && <projeto> test authz && <projeto> test hardening
@@ -80,7 +80,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Trivy fs
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with: { scan-type: fs, severity: HIGH,CRITICAL, exit-code: '1' }
