@@ -16,6 +16,7 @@ Saneamento da skill: Rust deixa de ser "principal, com Go auxiliar" — é uma l
 - Piso "Backend novo só em Go ou Rust" (`assets/CLAUDE.md`) e `references/arquitetura.md` (§3.1/§3.2) alinhados ao rol sancionado; PHP migra por funcionalidade quando tocado.
 - Hash de senha: argon2id-only para senha nova, com ponteiro para `schematize-engineering` → `references/iam.md`; `assets/CLAUDE.md` com equivalentes Rust no lugar de `Math.random`/`catch {}`/`@ts-ignore`.
 - Tabela de comandos completa (`/rust-load`, `/rust-claude`); mapa de references inclui `stack-versoes.md`; segurança de deps via `cargo deny` com `deny.toml` (`cargo audit` redundante).
+- Herdados parametrizados da base (`schematize-engineering` → `assets/herdados/`): os blocos "Precedência e herança", "Fluxo de ambientes e ops", "Deploy destrutivo", "Efeito externo" e "IAM por desenho" passam a ser gerados por `tools/sync-herdados.mjs` (lead específico de cada linguagem fica fora do bloco); `references/contexto-claude-code.md` e `scripts/check-external-effects{,.test}.sh` viram arquivos herdados (convenção do archive corrigida para `<projeto>/<projeto>_archive`; só a engineering é dona do handoff). A frase do step-up (senha + Email OTP = 2FA baseline, AAL alto só por rota sensível) vira regra comum do IAM.
 
 ### Removido
 - `assets/lint/.golangci.yml` (config Go v1 dentro da skill Rust) e `assets/lint/eslint.layers.cjs`.
