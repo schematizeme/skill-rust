@@ -2,24 +2,25 @@
 name: schematize-rust
 metadata:
   version: 1.12.2
-description: Padrões normativos de engenharia da casa com Rust como linguagem principal de backend e Go como auxiliar (arquitetura, segurança, IAM, testes, pentest, dados, observabilidade, deploy, archive). Use SEMPRE que for projetar, gerar, revisar ou refatorar qualquer backend, API, serviço, schema, migration, infra, CI/CD, teste ou deploy — mesmo que o usuário não cite "padrão" explicitamente. Aplique também ao decidir arquitetura, escolher stack, modelar eventos/banco, desenhar auth/identidade, escrever testes/pentest, configurar observabilidade, ou produzir ADR/runbook/archive. Contém pisos inegociáveis de segurança (segredo nunca no cliente, sem SQL concatenado, auth server-side, IAM por desenho — auth como app separada, ID≠email, ≥2 fatores, ReBAC multi-tenant, archive obrigatório) e de código (≤750 linhas/arquivo (~500 úteis + ~250 comentário; flag >300 úteis), uma função por arquivo, tudo comentado, MAPA da aplicação) que vetam atalhos inseguros. Frontend delega ao schematize-web.
+description: >-
+  Padrões da casa para backend em Rust: arquitetura, segurança, IAM, testes, dados, observabilidade, deploy e archive.
+  Use ao projetar, gerar, revisar ou refatorar código Rust (Cargo.toml, cargo, clippy, tokio/axum, sqlx) — serviço, API,
+  worker, CLI, migration ou CI. Rust entra por fit + ADR (auth, cripto, parsing hostil).
 ---
 
-# Padrões de Engenharia da Casa — Rust principal
+# Padrões de Engenharia da Casa — recorte Rust
 
-Conjunto normativo que rege como software de backend é projetado, construído, testado e operado aqui, **com Rust como linguagem principal e Go como auxiliar**. Mesma base normativa das demais skills da casa; o que muda é a ordem de preferência de linguagem e o ferramental.
+Conjunto normativo que rege como software de backend é projetado, construído, testado e operado aqui, no recorte **Rust**. Mesma base normativa das demais skills da casa; o que muda é o ferramental (cargo, clippy, cargo-deny, Tokio/axum, sqlx) e as armadilhas do dialeto.
 
 **Versão:** skill `schematize-rust` v1.12.2. Changelog em `CHANGELOG.md`.
 
-## Linguagem: Rust principal, Go auxiliar
+## Linguagem: Rust é uma do rol, por fit + ADR
 
-- **Backend novo nasce em Rust** (Tokio/axum, sqlx, etc.). É a escolha padrão para serviços, APIs, workers e CLIs.
-- **Go é a linguagem auxiliar**: use quando houver razão concreta — ecossistema/SDK maduro só em Go, time já dono do módulo, ou integração com base Go existente. A troca é decisão registrada em ADR, não preferência de gosto.
-- **Node backend é proibido** (frontend Node é 100% permitido — ver `schematize-web`). **PHP é proibido** e migra sumariamente.
-- Detalhe e critérios de migração em `references/stack-rust.md` e `references/arquitetura.md` (§3).
+- **Rust entra por fit**: correção e segurança de memória críticas — auth/IdP, criptografia, **parsing de entrada hostil**, protocolos binários — e onde o time domina a stack. A escolha vira ADR de fit, como a de qualquer linguagem do rol (`schematize-engineering` → `references/linguagens.md`; o desempate pragmático mora lá, não aqui).
+- **Node backend e PHP são legado/fora do rol** — não recebem serviço novo (frontend Node é `schematize-web`). Migração por funcionalidade do módulo, nunca big-bang.
+- **Outra linguagem do rol** no mesmo sistema segue a skill irmã dela (Go → `schematize-go`). Detalhe e toolchain em `references/stack-rust.md` e `references/arquitetura.md` (§3).
 
-> Esta skill é o **recorte Rust** do rol sancionado da casa (Go, Rust, Elixir, C#, Zig, Ruby — a
-> escolha por serviço sai de **fit + ADR**, `schematize-engineering` → `references/linguagens.md`).
+> Esta skill é o **recorte Rust** do rol sancionado da casa (Go, Rust, Elixir, C#, Zig, Ruby).
 > Não há hierarquia entre as irmãs: aqui a stack é Rust, e ponto. Todas podem coexistir na mesma
 > máquina — os comandos são namespaced por skill (ver abaixo).
 
@@ -60,6 +61,8 @@ Digite `/rust-help` pra ver todos. Em resumo:
 | Comando | O que faz |
 |---|---|
 | `/rust-help` | lista todos os comandos do schematize-rust |
+| `/rust-load` | carrega à força TODO o corpo normativo no contexto e passa a aplicá-lo no projeto atual |
+| `/rust-claude` | cria ou atualiza (com backup) o `CLAUDE.md` da raiz; mescla/avisa se detectar `CLAUDE.md` de outra skill |
 | `/rust-cc` | context compact: gera context.md + checklist.md no archive e roda `/compact` |
 | `/rust-handoff` | gera o handoff (context.md + checklist.md) **sem** compactar — pra fim de sessão |
 | `/rust-qa` | Q.A. no contexto Rust — wrapper fino da skill **schematize-qa** (`/qa-plan` → `/qa-run`) com `cargo test`/`cargo nextest` |
@@ -80,7 +83,7 @@ Mapa de references — leia o que casa com a tarefa:
 
 | Tarefa | Reference |
 |---|---|
-| **Stack Rust (principal), Go (auxiliar), toolchain, quando trocar de linguagem** | `references/stack-rust.md` |
+| **Stack Rust: fit, toolchain, lints (`assets/lint/`: `Cargo.lints.toml`, `clippy.toml`, `deny.toml`), cargo-deny** | `references/stack-rust.md` |
 | **Async/concorrência (Tokio): não bloquear o runtime, cancel-safety, locks, backpressure, shutdown** | `references/async-concorrencia.md` |
 | **Limites de código (arquivo ≤750: ~500 úteis + ~250 comentário; flag >300 úteis), uma função/arquivo, comentários, MAPA** | `references/padroes-codigo.md` |
 | Arquitetura, camadas, DDD, repositórios, anti-monólito, shared libs, CQRS | `references/arquitetura.md` |
@@ -96,6 +99,7 @@ Mapa de references — leia o que casa com a tarefa:
 | Templates, feature flags, IA assistida, DoD, evolução, índice de funcionalidades (§29+) | `references/entrega.md` |
 | Filosofia, aplicação universal e a lista completa de anti-padrões vetados | `references/anti-padroes.md` |
 | Gestão de contexto em sessões longas no Claude Code (handoff, hooks) | `references/contexto-claude-code.md` |
+| Versões e limiares voláteis (Rust estável, edição, MSRV, ferramental) | `references/stack-versoes.md` |
 
 ## Pisos inegociáveis (VETADO — sem ADR de exceção)
 
@@ -104,14 +108,14 @@ Nunca violados, nem "pra funcionar", nem "pra ir mais rápido". Lista completa e
 - **Segredo nunca no cliente.** Nada de API key, secret de JWT, senha de banco ou token em bundle do browser nem em `NEXT_PUBLIC_*`/`VITE_*`. Segredo só server-side. Detalhe em `references/seguranca.md`.
 - **SQL sempre parametrizado.** Concatenar string em query é injeção esperando acontecer (em Rust, use `sqlx`/binds; nunca `format!` em SQL).
 - **Auth e autorização server-side.** `tenant_id`/role/`user_id` vêm do token verificado, nunca do body/header do cliente.
-- **JWT validado por inteiro** (assinatura, exp, aud, iss, alg em allowlist). Senha em argon2id/bcrypt cost ≥ 12. Token de sessão por CSPRNG.
+- **JWT validado por inteiro** (assinatura, exp, aud, iss, alg em allowlist). Senha nova em **argon2id** (crate `argon2`, em `spawn_blocking`; parâmetros mínimos e rehash de legado em `schematize-engineering` → `references/iam.md`); bcrypt/PBKDF2 só como legado a migrar no próximo login. Token de sessão por CSPRNG (`OsRng`/`getrandom`).
 - **Erro nunca engolido.** Sem `let _ = ...` pra calar resultado, sem `.unwrap()`/`.expect()` em caminho de produção pra silenciar o compilador; trate `Result`/`Option` de verdade (`?`, match, erro tipado).
 - **Teste nunca silenciado** pra passar CI (`#[ignore]`, comentar assert, baixar threshold). Conserta o código, não o teste.
 - **Sem monólito que mistura bounded contexts**, sem monólito distribuído, sem shared lib `commons` de domínio.
 - **Archive SEMPRE gerado.** Toda entrega que produz código/decisão/mudança de estado gera o `.md` de archive. Templates em `assets/`.
 - **Migration reversível** (com `down`, testada com rollback). Container não-root, read-only. Dependência nova com nome/licença/versão verificados.
 - **Pisos de código (`references/padroes-codigo.md`):** arquivos **≤ 750 linhas** (teto duro: ~250 de comentário + ~500 de código útil; acima → quebrar por coesão), **flag em > 300 linhas de código útil** (não bloqueia, mas sempre sinaliza — indício de função extensa/falta de abstração, revê depois; observabilidade ~400), **uma função/unidade lógica por arquivo**, **toda função com doc-comment** (`///`: motivo, comportamento esperado, entradas, saídas, efeitos), **`MAPA.md` da aplicação** atualizado no mesmo PR — em **`<projeto>_archive/index/`, nunca no root** — e **índice de microfunções** regenerado (`/rust-index`). **Todo MD gerado (MAPA/índice/plano/relatório/handoff) mora no archive**, root limpo (§28). Detalhe em `schematize-engineering` -> `references/padroes-codigo.md` (§4) e `references/operacao.md` (§28, §39).
-- **Backend novo prioriza Rust; Go é auxiliar; Node backend e PHP são proibidos.** Critérios em `references/stack-rust.md`.
+- **Backend novo só no ROL sancionado (Go/Rust/Elixir/C#/Zig/Ruby), escolhido por fit + ADR** (`schematize-engineering` → `references/linguagens.md`). Node backend e PHP são legado/fora do rol. Critérios do fit de Rust em `references/stack-rust.md`.
 - **Fluxo de ambientes e ops (`references/ops.md`).** Toda mudança segue **dev local → teste local → GitHub → hml → prd**; **VETADO editar código direto no servidor** (hml/prd é imutável por edição manual, recebe só artefato do git). **100%** das operações no servidor (install/update/correção/config/migrate/rollback) passam pela **ferramenta do `<projeto>_ops`** — nunca à mão; o ops é **autônomo** (o usuário provisiona o servidor do zero sem a IA). **Instalação sempre paralela** = `nproc`; **falha no paralelo = serviços não independentes → corrigir a independência é prioridade máxima** (não serializar pra mascarar).
 - **Deploy destrutivo por seed + isolamento por usuário (`schematize-engineering` -> `references/ops.md` §2–§3).** O ops provisiona em **`/<app>/`** clonando os repos dentro; **`/<app>/.env` é o seeder global** (fonte única de config). **Todo redeploy é destrutivo na aplicação** — apaga a anterior e recria um clone zerado só com o seed (idempotente/sem drift), **preservando os dados** (migration reversível; `ops reset` de dados só em dev/hml). **Cada serviço roda como user Linux próprio em systemd unit hardened** (blast radius mínimo). Tudo automatizado pelo ops.
 - **IAM por desenho (`references/iam.md`).** Todo projeto com auth começa com identidade e autorização robustas, e o auth é **app SEPARADA** — microserviço Rust `<projeto>_auth_rs` (axum/actix) + front próprio em **`auth.<domain>`**, isolado; **VETADO** monolith; apps delegam por **OIDC/OAuth2.1 + PKCE** (chave só no auth, JWKS público). **ID interno imutável — email/telefone nunca é ID** (N emails por usuário). **≥2 fatores sempre** (passkey/WebAuthn no núcleo via `webauthn-rs`, email OTP Resend always-on, Twilio p/ telefone; argon2id em `spawn_blocking`); invariante de troca "fator Y≠X no maior AAL"; recuperação ≥ login. **Multi-tenant RBAC/ABAC via ReBAC** (OpenFGA/SpiceDB), deny-default, PEP como `tower` layer, token fino. **Sessão 7d/90d**; **logout irreversível** (revoga refresh+família, `jti` na denylist, não só cookie). **Migrar auth legado = prioridade 0.** Scaffold/auditoria por `/rust-iam`.

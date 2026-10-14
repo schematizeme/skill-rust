@@ -66,8 +66,8 @@ Digite `/rust-help` dentro do Claude Code para ver a lista completa.
 
 ## Skills irmãs
 
-- [skill-go](https://github.com/schematizeme/skill-go) — backend Go principal.
-- [skill-rust](https://github.com/schematizeme/skill-rust) — backend Rust principal.
+- [skill-go](https://github.com/schematizeme/skill-go) — recorte Go do rol sancionado.
+- [skill-rust](https://github.com/schematizeme/skill-rust) — recorte Rust do rol sancionado.
 - [skill-web](https://github.com/schematizeme/skill-web) — frontend / SEO / performance.
 
 As três podem ficar habilitadas ao mesmo tempo: os comandos são namespaced por skill

@@ -25,7 +25,7 @@
 | Ferramenta | Papel | Nota |
 |---|---|---|
 | `clippy` | lint | `-D warnings` no CI |
-| `cargo audit` / `cargo deny` | advisories, licença e bans num só gate | trava o merge |
+| `cargo deny` | advisories, licença, bans e fontes num só gate (`assets/lint/deny.toml`) | trava o merge |
 | `cargo nextest` | runner de teste paralelo, saída melhor no CI | |
 | `cargo llvm-cov` | cobertura | |
 | `cargo miri test` | UB no que tem `unsafe` | obrigatório onde há `unsafe` |

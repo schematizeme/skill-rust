@@ -4,7 +4,7 @@
 > Ele fica pinado no contexto de toda tarefa (Claude Code / instruções de projeto)
 > e garante que os padrões valham mesmo quando a skill não dispara sozinha.
 > A skill `schematize-rust` traz o detalhe completo e o andaime (scripts/templates).
-> **Repo multi-linguagem** (Node/Go/Rust + Web): use **junto** com os `CLAUDE.md` das outras skills — cada um governa sua fronteira (backend novo, legado Node, frontend); não sobrescreva os outros (rode o `/<slug>-claude` de cada).
+> **Repo multi-linguagem** (rol de linguagens + Node legado + Web): use **junto** com os `CLAUDE.md` das outras skills — cada um governa sua fronteira (backend novo, legado Node, frontend); não sobrescreva os outros (rode o `/<slug>-claude` de cada).
 
 ## Regra mestre
 
@@ -22,11 +22,11 @@ antes de produzir código ou decisão — não trabalhe de memória.
 2. **SQL sempre parametrizado** — concatenar string em query é proibido.
 3. **Auth e autorização server-side.** `tenant_id`/role/`user_id` vêm do token
    verificado, nunca do cliente. JWT validado por inteiro (assinatura, exp, aud,
-   iss, alg em allowlist). Senha em bcrypt cost ≥ 12 ou argon2id. Token/sessão por
-   CSPRNG, nunca `Math.random()`.
-4. **Erro nunca engolido** (`catch {}`, `except: pass`, `_ = err`); sem
-   `any`/`@ts-ignore`/`unwrap()` pra calar o compilador.
-5. **Teste nunca silenciado** pra passar CI (`.skip`, comentar assert, baixar
+   iss, alg em allowlist). Senha nova em argon2id (bcrypt/PBKDF2 só como legado a migrar no próximo login; `schematize-engineering` → `references/iam.md`). Token/sessão por
+   CSPRNG (`OsRng`/`getrandom`), nunca RNG não criptográfico.
+4. **Erro nunca engolido** (`let _ = resultado`, `.ok()` que descarta o erro);
+   sem `.unwrap()`/`.expect()` em produção pra calar o compilador.
+5. **Teste nunca silenciado** pra passar CI (`#[ignore]`, comentar assert, baixar
    threshold de cobertura). Conserte o código, não o teste.
 6. **Sem monólito** que mistura bounded contexts; sem monólito distribuído; sem
    shared lib `commons` de domínio.
@@ -35,12 +35,14 @@ antes de produzir código ou decisão — não trabalhe de memória.
 8. **Migration reversível** (com `down`, testada). Container não-root, read-only.
    Dependência nova com nome/licença/versão verificados.
 
-9. **Backend novo só em Go ou Rust; Node backend é proibido.** Node legado não
-   se mexe salvo solicitado. Migração medida por **funcionalidade do módulo**:
-   mudança que atinge ~30% das funcionalidades → extrai pra módulo Go/Rust à
-   parte; ~50% extraído → migra o restante de uma vez; ajuste pontual não porta.
-   **PHP é proibido** e migra sumariamente. **Frontend Node é 100% permitido**
-   (Next.js principal; Astro e outros consolidados) — só frontend. (§3, §3.1, §3.2)
+9. **Backend novo só no ROL sancionado (Go/Rust/Elixir/C#/Zig/Ruby), escolhido
+   por fit + ADR** (`schematize-engineering` → `references/linguagens.md`).
+   **Node como serviço backend e PHP são legado/fora do rol** — não recebem
+   serviço novo. Node legado não se mexe salvo solicitado; migração medida por
+   **funcionalidade do módulo**: ~30% afetado → extrai pra módulo do rol à parte;
+   ~50% extraído → continua extraindo até apagar o legado; ajuste pontual não
+   porta. PHP migra por funcionalidade quando tocado. **Frontend Node é 100%
+   permitido** (Next.js principal; Astro e outros consolidados) — só frontend. (§3, §3.1, §3.2)
 
 10. **Cada serviço é entidade à parte (independência de runtime).** Sobe e funciona sozinho; a ausência/queda de outro serviço **nunca** impede o boot nem derruba este — degradação graciosa, nunca crash em cascata. Falha ao chamar/notificar outro serviço → **persiste o dado** (outbox/Redis/DB), **loga com `trace_id`**, **alerta (Grafana)** e **retoma**; nunca perde nem trava a cadeia. (§2, §18)
 11. **Repos, ops e observabilidade.** Repositório = `<projeto>_<contexto>[_<lang>]`; todo sistema multi-repo tem um **`<projeto>_ops`** (bootstrap/update/manutenção/troubleshooting/testes através de todos os repos). **Observabilidade integrada em toda ferramenta/serviço:** OpenTelemetry + Grafana/Alloy/Loki/Tempo/Prometheus/**Mimir** (+Pyroscope), **Helm chart** e dashboards/alertas versionados como código. (§2, §16)

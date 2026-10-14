@@ -3,6 +3,23 @@
 Todas as mudanças relevantes deste pacote, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 com versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.13.0] — 2026-10-14
+Saneamento da skill: Rust deixa de ser "principal, com Go auxiliar" — é uma linguagem do rol sancionado, por fit + ADR — e o lint/CI passam a ser de Rust.
+
+### Adicionado
+- `assets/lint/clippy.toml` (thresholds: complexidade 15, aninhamento 4, `unwrap` só em teste), `assets/lint/Cargo.lints.toml` (bloco `[lints]` com `unsafe_code = "forbid"` e os lints `unwrap_used`/`expect_used`/`panic`/… que `stack-rust.md` exige) e `assets/lint/deny.toml` (cargo-deny: advisories, licenças, bans, fontes) — validados com clippy e `cargo-deny` reais.
+- CI: `cargo fmt --check`, `clippy -D warnings`, `cargo nextest` + doctests, `cargo deny`, job `sqlx prepare --check`; `INDEX_SRC` default `./src`; Trivy/Gitleaks/checkout pinados por SHA (sem `@master`).
+
+### Alterado
+- Description reescrita (≤350 chars) ancorada em Rust (`Cargo.toml`, cargo, clippy, tokio/axum, sqlx); `skill.toml`: tag e descrições pt/en/es só de Rust.
+- `SKILL.md` e `references/stack-rust.md`: fim do "Rust principal, Go auxiliar" — Rust entra por fit (auth, cripto, parsing hostil), sem ADR obrigatório "para escolher Go"; Go aponta para `schematize-go`. `references/iam.md` e READMEs idem.
+- Piso "Backend novo só em Go ou Rust" (`assets/CLAUDE.md`) e `references/arquitetura.md` (§3.1/§3.2) alinhados ao rol sancionado; PHP migra por funcionalidade quando tocado.
+- Hash de senha: argon2id-only para senha nova, com ponteiro para `schematize-engineering` → `references/iam.md`; `assets/CLAUDE.md` com equivalentes Rust no lugar de `Math.random`/`catch {}`/`@ts-ignore`.
+- Tabela de comandos completa (`/rust-load`, `/rust-claude`); mapa de references inclui `stack-versoes.md`; segurança de deps via `cargo deny` com `deny.toml` (`cargo audit` redundante).
+
+### Removido
+- `assets/lint/.golangci.yml` (config Go v1 dentro da skill Rust) e `assets/lint/eslint.layers.cjs`.
+
 ## [1.12.2] — 2026-09-30
 O piso de orquestração passa a ser **herdado** da base em vez de copiado à mão: uma mudança na engineering não exige mais editar 38 arquivos.
 

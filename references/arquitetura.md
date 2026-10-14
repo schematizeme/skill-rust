@@ -44,19 +44,19 @@ transformava a skill num veto sobre as irmãs.)*
 
 - **Não há default por gosto.** A escolha sai do guia de fit (`schematize-engineering` → `references/linguagens.md`) e vira ADR. Em empate técnico real, vence a linguagem que o time já opera em produção — e isso também vai no ADR, como o critério que foi.
 
-### 3.1 Node legado (backend) — migração para Rust/Go
+### 3.1 Node legado (backend) — saída para o rol
 
 Node como linguagem de **serviço backend** está em saída. Tudo que existe em Node backend será migrado para Rust ou Go, guiado por esforço (não big-bang) e medido **por funcionalidade do módulo**, não por linha.
 
-- **Gatilho de extração (~30%):** quando uma mudança atingir ~30% das funcionalidades do módulo (alteradas + novas), **não cresça o Node** — extraia essa(s) funcionalidade(s) para um **módulo Rust/Go à parte** e incorpore o comportamento Node nessa nova base.
+- **Gatilho de extração (~30%):** quando uma mudança atingir ~30% das funcionalidades do módulo (alteradas + novas), **não cresça o Node** — extraia essa(s) funcionalidade(s) para um **módulo à parte numa linguagem do rol (fit + ADR)** e incorpore o comportamento Node nessa nova base.
 
-- **Extração incremental:** conforme se mexe no módulo Node ao longo do tempo, vai-se extraindo aos poucos para Rust/Go.
+- **Extração incremental:** conforme se mexe no módulo Node ao longo do tempo, vai-se extraindo aos poucos para o rol sancionado.
 
-- **Virada dos 50%:** quando ~50% do módulo já estiver extraído/inutilizado (substituído pela versão Rust/Go), **migra-se os 50% restantes de uma vez** — encerra o módulo Node.
+- **Virada dos 50%:** quando ~50% do módulo já estiver extraído/inutilizado (substituído pela versão nova), **continua-se extraindo o restante, por funcionalidade, até apagar o módulo Node** — big-bang segue vetado.
 
-### 3.2 PHP — proibido
+### 3.2 PHP — legado, migra por funcionalidade
 
-- Projeto existente em PHP é **migrado sumariamente** para Rust/Go (backend) — prioridade de migração, com ADR e plano. Não é "quando der"; é dívida ativa a ser zerada.
+- PHP não recebe serviço novo. Projeto existente em PHP é legado: **migra por funcionalidade quando tocado**, para uma linguagem do rol (fit + ADR), com plano (`schematize-engineering` → `references/linguagens.md` §2). Sem prazo forçado e sem "migração sumária".
 
 ## 4. Arquitetura
 

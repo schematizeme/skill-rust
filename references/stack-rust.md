@@ -1,30 +1,29 @@
-# Stack — Rust principal, Go auxiliar
+# Stack — Rust (fit, toolchain e ferramental)
 
-Define a preferência de linguagem desta skill e o ferramental. É a inversão da
-a base: aqui **Rust é a linguagem do serviço** e outra do rol pode entrar como **auxiliar** (a
-auxiliar**. Tudo o mais (arquitetura, segurança, testes, operação) segue os
-references comuns.
+Define quando Rust entra e o ferramental desta skill. Rust é **uma** linguagem do rol sancionado da
+casa (Go, Rust, Elixir, C#, Zig, Ruby), escolhida por **fit + ADR** — sem hierarquia entre as irmãs
+(`schematize-engineering` → `references/linguagens.md`). Tudo o mais (arquitetura, segurança,
+testes, operação) segue os references comuns.
 
-## 1. Ordem de preferência
+## 1. Quando Rust é o fit
 
-1. **Rust** — padrão para serviços, APIs, workers, CLIs e qualquer backend novo.
-2. **Go** — auxiliar. Use quando houver razão concreta e registrada em ADR:
-   - SDK/cliente oficial maduro só em Go (sem binding Rust estável);
-   - módulo/serviço existente já em Go cujo time é dono;
-   - prazo/risco em que o ecossistema Go reduz custo de forma mensurável.
-3. **Node backend: proibido.** Frontend Node é 100% permitido (ver `schematize-web`).
-4. **PHP: proibido**, migra sumariamente.
+- **Fit forte:** correção e segurança de memória críticas — auth/IdP, criptografia, **parsing de
+  entrada hostil**, protocolos binários, componentes que não podem ter pausa de GC ou UB.
+- **Também serve** para serviços, APIs, workers e CLIs quando o time domina e o custo de
+  desenvolvimento compensa. Se o fit não é claro, o desempate pragmático está na base, não aqui.
+- A decisão vira **ADR** (`assets/ADR.md`) com o fit que a motivou; não há ADR "para escolher" uma
+  linguagem em detrimento de outra por default — há ADR de fit, igual para todas do rol.
+- **Node backend e PHP** são legado/fora do rol: não recebem serviço novo (frontend Node é
+  `schematize-web`).
 
-A escolha por Go **não** é gosto: precisa de ADR (`assets/ADR.md`) com o motivo.
+## 2. Outras linguagens na mesma máquina/sistema
 
-## 2. Quando trocar de linguagem (medido por funcionalidade)
-
-Mesma régua da casa, aplicada à direção Rust↔Go:
-
-- Ajuste pontual em módulo Go legado **não** porta para Rust.
-- ~30% do módulo afetado → extrai a parte mexida para um módulo Rust à parte.
-- ~50% já extraído → migra o resto do módulo para Rust.
-- Serviço novo: Rust, salvo ADR justificando Go.
+Serviço em outra linguagem do rol segue **integralmente a skill irmã dela** — para Go, use
+`schematize-go` (`go.mod`, `golangci-lint`, `govulncheck`, concorrência com `context`/`errgroup`).
+Os pisos são os mesmos em todas: erro nunca engolido, SQL parametrizado, container não-root, lint da
+linguagem no CI, IAM como app separada, efeito externo que não sai de não-produção. Quando uma
+migração entre linguagens é discutida, a régua é por **funcionalidade do módulo** (~30% afetado
+extrai; ~50% extraído continua extraindo), nunca big-bang.
 
 ## 3. Toolchain Rust (piso)
 
@@ -65,6 +64,11 @@ Mesma régua da casa, aplicada à direção Rust↔Go:
   `restriction`/`pedantic`, desligados por default. Em teste, `unwrap` é aceitável — por isso o
   `#[allow]` no módulo de teste, não o afrouxamento global.
 
+  **Config pronta (copie e estenda):** `assets/lint/Cargo.lints.toml` (o bloco `[lints]` com `unsafe_code = "forbid"`,
+  `unwrap_used`/`expect_used`/`panic`/`indexing_slicing`/`todo`/`unimplemented` em `deny` e complexidade
+  cognitiva/aninhamento ligados), `assets/lint/clippy.toml` (thresholds: complexidade 15, aninhamento 4;
+  `unwrap` liberado só em teste) e `assets/lint/deny.toml` (cargo-deny: advisories, licenças, bans, fontes).
+
   **`#![forbid(unsafe_code)]`**, não `deny`: `deny` é **reabrível** por um `#[allow(unsafe_code)]`
   local, e um piso que qualquer arquivo reabre não é piso. Onde `unsafe` for realmente necessário,
   o crate inteiro sai do `forbid` **com ADR** — que é exatamente a fricção que se quer, em vez de
@@ -72,18 +76,10 @@ Mesma régua da casa, aplicada à direção Rust↔Go:
   invariantes + `cargo miri test` no CI.
 - **Testes:** `cargo test` + (no domínio crítico) property-based (`proptest`) e
   mutation; cobertura é piso, não meta. Detalhe em `references/testes.md` (o recorte Rust) — a **disciplina** de teste é da `schematize-qa`, e a segurança ofensiva da `schematize-pentest`.
-- **Segurança de deps:** `cargo deny`/`cargo audit` no CI; dependência nova com
+- **Segurança de deps:** `cargo deny check` (config `assets/lint/deny.toml`) no CI — um gate só para advisories, licenças, bans e fontes (`cargo audit` é redundante); dependência nova com
   nome/licença/versão verificados (typosquatting é real).
 
-## 4. Outra linguagem do rol como auxiliar (piso quando usada)
-
-Um serviço auxiliar em outra linguagem do rol sancionado segue **integralmente a skill irmã dela**
-— e os pisos são os mesmos em todas: erro nunca engolido, SQL parametrizado, container não-root,
-lint da linguagem no CI, IAM como app separada, efeito externo que não sai de não-produção.
-A escolha do auxiliar é **fit + ADR**, como a do principal
-(`schematize-engineering` → `references/linguagens.md`), não preferência.
-
-## 5. Pisos de código valem igual
+## 4. Pisos de código valem igual
 
 Independente da linguagem, valem os limites de `references/padroes-codigo.md`:
 arquivos ≤ 750 linhas (~500 de código útil + ~250 de comentário; flag em > 300
@@ -92,7 +88,7 @@ arquivos ≤ 750 linhas (~500 de código útil + ~250 de comentário; flag em > 
 comportamento esperado, entradas, saídas e efeitos, e o **`MAPA.md`** da
 aplicação atualizado no mesmo PR.
 
-## 6. Coexistência com as outras skills
+## 5. Coexistência com as outras skills
 
 As skills do rol e a `schematize-web` podem estar habilitadas na mesma máquina ao
 mesmo tempo. Não há conflito: cada skill instala em seu próprio diretório

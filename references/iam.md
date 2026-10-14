@@ -12,8 +12,8 @@
 > muda de linguagem (a biblioteca, o tipo, o runtime).
 
 Piso normativo de **identidade, autenticação e autorização** da casa, especializado para
-**backend Rust** (o serviço de auth é um microserviço Rust; Go entra só como auxiliar,
-decisão em ADR). **Todo projeto começa com um IAM robusto por desenho** — segurança é
+**backend Rust** (o serviço de auth é um microserviço Rust; outra linguagem do rol só
+por fit + ADR). **Todo projeto começa com um IAM robusto por desenho** — segurança é
 inegociável. A base agnóstica vive na `schematize-engineering` (`references/iam.md`); aqui
 ela ganha a topologia de serviço, as crates e os padrões async/Tokio da casa.
 
